@@ -1,33 +1,25 @@
 // Composables
+import { makeGroupProps, useGroup } from '@/composables/group'
 import { makeTagProps } from '@/composables/tag'
-// import { useGroup } from '@/composables/group'
 
 // Directives
-import { TouchDirectiveBinding } from '@/directives/touch'
+// import { TouchDirectiveBinding } from '@/directives/touch'
 
 // Styles
 import './VWindow.sass'
 
 // Utilities
-import { defineComponent, PropType, withDirectives } from 'vue'
-import { makeProps, useDirective } from '@/util'
+import { defineComponent, PropType /* withDirectives */ } from 'vue'
+import { makeProps } from '@/util'
 import { TouchHandlers } from 'vuetify/types'
 
-// const VWindowSymbol = Symbol.for('vuetify:v-window')
+const VWindowSymbol = Symbol.for('vuetify:v-window')
 
 export default defineComponent({
   name: 'VWindow',
 
   props: makeProps({
-    activeClass: {
-      type: String,
-      default: 'v-window-item--active',
-    },
     continuous: Boolean,
-    mandatory: {
-      type: Boolean,
-      default: true,
-    },
     nextIcon: {
       type: [Boolean, String],
       default: '$next',
@@ -46,19 +38,25 @@ export default defineComponent({
     },
     vertical: Boolean,
 
+    ...makeGroupProps({
+      mandatory: true,
+      selectedClass: 'v-window-item--active',
+    }),
     ...makeTagProps(),
   }),
 
-  setup (props, ctx) {
-    // const { next, prev } = useGroup(props, VWindowSymbol) // I'm not sure if this inject key arg is correct.
+  emits: ['change'],
 
-    return () => withDirectives(
+  setup (props, ctx) {
+    const { next, prev } = useGroup(props, VWindowSymbol) // I'm not sure if this inject key arg is correct.
+
+    return () => (
       <props.tag class="v-window">
-        { ctx.slots.default?.() }
-      </props.tag>,
-      useDirective<TouchDirectiveBinding>({
-        value: props.touch,
-      }),
+        { ctx.slots.default?.({
+          next,
+          prev,
+        }) }
+      </props.tag>
     )
   },
 })
